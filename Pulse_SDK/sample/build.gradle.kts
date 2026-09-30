@@ -9,15 +9,19 @@ tasks.register("helloTask2") {
 }
 
 android {
-    namespace = "com.example.pulse_sdk"
+    namespace = "dev.pulse.sample"
     compileSdk {
         version = release(36) {
             minorApiLevel = 1
         }
     }
+    buildFeatures {
+        buildConfig = true
+        resValues = true
+    }
 
     defaultConfig {
-        applicationId = "com.example.pulse_sdk"
+        applicationId = "dev.pulse.sample"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
@@ -25,16 +29,51 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
+    fun secret(name: String): String? =
+        providers.gradleProperty(name).orElse(providers.environmentVariable(name)).orNull
 
+    val releaseStoreFile = secret("PULSE_STORE_FILE")
+    signingConfigs {
+        // Only create the release config if the secrets exist on this machine
+        if (releaseStoreFile != null) {
+            create("release") {
+                storeFile = file(releaseStoreFile)
+                storePassword = secret("PULSE_STORE_PASSWORD")
+                keyAlias = secret("PULSE_KEY_ALIAS")
+                keyPassword = secret("PULSE_KEY_PASSWORD")
+            }
+        }
+    }
     buildTypes {
+        debug {
+            applicationIdSuffix = ".debug"
+        }
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("release")
+
         }
     }
+    flavorDimensions += "environment"
+    productFlavors {
+        create("staging") {
+            dimension = "environment"
+            applicationIdSuffix = ".staging"
+            buildConfigField("String", "PULSE_ENV", "\"staging\"")
+            resValue("string", "app_name", "Pulse Sample (STG)")
+        }
+        create("production") {
+            dimension = "environment"
+            buildConfigField("String", "PULSE_ENV", "\"production\"")
+            resValue("string", "app_name", "Pulse Sample")
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -42,12 +81,12 @@ android {
 }
 
 dependencies {
-    implementation(libs.androidx.appcompat)
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.material)
+    implementation(libs.timber)
+    implementation(project(":pulse-core"))       // nhờ api(pulse-model), app dùng được PulseLevel
+    runtimeOnly(project(":pulse-sink-logcat"))   // không import class nào, chỉ cần có mặt lúc chạy
+
     testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
 }
 
-println("[INIT]   settings.gradle.kts has been evaluated")
+println("[CONFIG] $path configured")

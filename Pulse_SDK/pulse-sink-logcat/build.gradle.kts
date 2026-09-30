@@ -32,6 +32,7 @@ kotlin {
 }
 
 dependencies {
+    testImplementation(libs.junit)
     api(project(":pulse-model"))
 }
 

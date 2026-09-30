@@ -91,7 +91,6 @@ abstract class GeneratePulseVersionTask : DefaultTask() {
                 buildType.set(variant.buildType ?: "unknown")
                 packageName.set(variant.namespace)
             }
-            // Tự gán outputDirectory, tự thêm vào source set, tự tạo dependency cho task compile
             variant.sources.java?.addGeneratedSourceDirectory(
                 generateTask,
                 GeneratePulseVersionTask::outputDirectory,

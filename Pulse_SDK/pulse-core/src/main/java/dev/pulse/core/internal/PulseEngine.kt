@@ -12,6 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
 internal class PulseEngine private constructor(
@@ -24,15 +25,21 @@ private val scope = CoroutineScope(
         Log.w(TAG, "Coroutine exception in PulseEngine: ${e.message}", e)
     }
 )
+
     private val queue = Channel<PulseEvent>(capacity = 256, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     val sinkIds: List<String> = sinks.map { it.id }
 
+    init {
+        scope.launch {
+            for (event in queue) dispatch(event)
+        }
+    }
     fun submit(event: PulseEvent) {
         if (event.level.priority < config.minLevel.priority) return
         queue.trySend(event)
     }
 
-    private fun displatch(event: PulseEvent) {
+    private fun dispatch(event: PulseEvent) {
         val enriched =  event.withAttributes(mapOf("env" to config.environment))
         for (sink in sinks) {
             try {

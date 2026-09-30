@@ -48,3 +48,23 @@ pulse-sdk/
 │   └── java/dev/pulse/sample/JavaCaller.java
 ├── staging/kotlin/dev/pulse/sample/Environment.kt
 └── production/kotlin/dev/pulse/sample/Environment.kt
+
+
+
+# Chạy task tự viết, [EXEC] sẽ in ra
+./gradlew lifecycleDemo
+
+# Sinh PulseVersion.java
+./gradlew :pulse-core:generateDebugPulseVersion
+
+# Build AAR: generateDebugPulseVersion → compileDebugKotlin → ... → bundleDebugAar
+./gradlew :pulse-core:assembleDebug
+
+# Chạy unit test
+./gradlew :pulse-model:test
+
+# Build và cài app lên thiết bị hoặc emulator đang kết nối
+./gradlew :sample:installStagingDebug
+
+# Build + test mọi module
+./gradlew build

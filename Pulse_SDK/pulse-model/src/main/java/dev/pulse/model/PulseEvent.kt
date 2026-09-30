@@ -8,7 +8,7 @@ public class PulseEvent (
 ){
     public fun withAttributes(extra: Map<String, String>): PulseEvent =
         PulseEvent(name, level, attributes + extra, timestampMillis)
-    /** Ví dụ: `[INFO] app_started {env=staging}` */
+
     public fun toLogLine(): String = buildString {
         append('[').append(level.name).append("] ").append(name)
         if (attributes.isNotEmpty()) {
