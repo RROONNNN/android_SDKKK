@@ -83,7 +83,7 @@ android {
 dependencies {
     implementation(libs.timber)
     implementation(project(":pulse-core"))       // nhờ api(pulse-model), app dùng được PulseLevel
-    runtimeOnly(project(":pulse-sink-logcat"))   // không import class nào, chỉ cần có mặt lúc chạy
+    implementation(project(":pulse-sink-logcat"))
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
